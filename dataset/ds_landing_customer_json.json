@@ -1,0 +1,19 @@
+{
+	"name": "ds_landing_customer_json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage_linked_svc_order",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "customers.json",
+				"container": "landing"
+			}
+		},
+		"schema": {}
+	}
+}
