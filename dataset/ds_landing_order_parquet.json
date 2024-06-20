@@ -1,0 +1,20 @@
+{
+	"name": "ds_landing_order_parquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage_linked_svc_order",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "orders.parquet",
+				"container": "landing"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
