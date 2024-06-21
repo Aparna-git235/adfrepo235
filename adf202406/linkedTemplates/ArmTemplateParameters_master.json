@@ -14,6 +14,12 @@
 		"AzureDataLakeStorage_order_properties_typeProperties_url": {
 			"value": "https://storageacc052024.dfs.core.windows.net/"
 		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "sqldbserver4220.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "SQLDB2024"
+		},
 		"containerUri": {
 			"value": ""
 		},
