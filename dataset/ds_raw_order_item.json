@@ -5,6 +5,9 @@
 			"referenceName": "AzureDataLakeStorage_order",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Raw_Target"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
