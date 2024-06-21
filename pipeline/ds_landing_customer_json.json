@@ -53,7 +53,14 @@
 			{
 				"name": "Copy order items landing raw",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Copy customer json from landing  to raw",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.00:10:00",
 					"retry": 0,
@@ -111,7 +118,14 @@
 			{
 				"name": "Copy order parquet landing raw",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Copy order items landing raw",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.00:10:00",
 					"retry": 0,
