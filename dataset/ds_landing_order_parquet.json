@@ -5,6 +5,9 @@
 			"referenceName": "AzureBlobStorage_linked_svc_order",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Landing_Source"
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
