@@ -87,6 +87,124 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "Copy order items landing raw",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_landing_order_item",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_raw_order_item",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy order parquet landing raw",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "ParquetReadSettings"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_landing_order_parquet",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_raw_orders_parquet",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -96,7 +214,11 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_landing_customer_json')]",
-				"[concat(variables('factoryId'), '/datasets/ds_raw_customer_json')]"
+				"[concat(variables('factoryId'), '/datasets/ds_raw_customer_json')]",
+				"[concat(variables('factoryId'), '/datasets/ds_landing_order_item')]",
+				"[concat(variables('factoryId'), '/datasets/ds_raw_order_item')]",
+				"[concat(variables('factoryId'), '/datasets/ds_landing_order_parquet')]",
+				"[concat(variables('factoryId'), '/datasets/ds_raw_orders_parquet')]"
 			]
 		},
 		{
@@ -262,84 +384,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_order_landing_to_raw')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy order items landing raw",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.00:10:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_landing_order_item",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_raw_order_item",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2024-06-20T11:18:47Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_landing_order_item')]",
-				"[concat(variables('factoryId'), '/datasets/ds_raw_order_item')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/pl_order_parquet_landing_to_raw')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -424,6 +468,9 @@
 					"referenceName": "AzureBlobStorage_linked_svc_order",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Landing_Source"
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
@@ -446,6 +493,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureDataLakeStorage_order",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Raw_Target"
 				},
 				"annotations": [],
 				"type": "Json",
@@ -470,6 +520,9 @@
 					"referenceName": "AzureBlobStorage_linked_svc_order",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Landing_Source"
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
@@ -492,6 +545,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureBlobStorage_linked_svc_order",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Landing_Source"
 				},
 				"annotations": [],
 				"type": "Json",
@@ -516,6 +572,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureBlobStorage_linked_svc_order",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Landing_Source"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -566,6 +625,9 @@
 					"referenceName": "AzureBlobStorage_linked_svc_order",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Landing_Source"
+				},
 				"annotations": [],
 				"type": "Parquet",
 				"typeProperties": {
@@ -591,6 +653,9 @@
 					"referenceName": "AzureDataLakeStorage_order",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Raw_Target"
+				},
 				"annotations": [],
 				"type": "Json",
 				"typeProperties": {
@@ -614,6 +679,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureDataLakeStorage_order",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Raw_Target"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -642,6 +710,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureDataLakeStorage_order",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Landing_Source"
 				},
 				"annotations": [],
 				"type": "Parquet",
