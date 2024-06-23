@@ -965,10 +965,14 @@
 							}
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "SelectOrderItems"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
-						"          ORDER_ID as short,",
+						"          ORDER_ID as integer,",
 						"          LINE_ITEM_ID as short,",
 						"          PRODUCT_ID as short,",
 						"          UNIT_PRICE as double,",
@@ -976,14 +980,25 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> Orderitemsrow",
-						"Orderitemsrow sink(allowSchemaDrift: true,",
+						"     ignoreNoFilesFound: false,",
+						"     partitionBy('hash', 1)) ~> Orderitemsrow",
+						"Orderitemsrow select(mapColumn(",
+						"          UNIT_PRICE_INR = UNIT_PRICE,",
+						"          each(match(name=='ORDER_ID'||name=='PRODUCT_ID')),",
+						"          each(match(type=='integer'),",
+						"               $$+'_INT' = $$)",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SelectOrderItems",
+						"SelectOrderItems sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     partitionFileNames:['order_items.csv'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> OrderItemTestSink"
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> OrderItemTestSink"
 					]
 				}
 			},
