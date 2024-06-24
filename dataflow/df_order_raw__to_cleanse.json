@@ -1,0 +1,191 @@
+{
+	"name": "df_order_raw__to_cleanse",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_raw_orders_parquet",
+						"type": "DatasetReference"
+					},
+					"name": "OrdersRaw"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_landing_order_item",
+						"type": "DatasetReference"
+					},
+					"name": "OrderItemsRaw"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_landing_customer_json",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerRaw"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_cleanse_orders",
+						"type": "DatasetReference"
+					},
+					"name": "OrderSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_cleanse_order_items",
+						"type": "DatasetReference"
+					},
+					"name": "OrderItemSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_cutomer_cleanse",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "OrderDateUpdatedTimestamp"
+				},
+				{
+					"name": "castDataTypeOrders"
+				},
+				{
+					"name": "DropOrderateTimeAndReorder"
+				},
+				{
+					"name": "CastDataType"
+				},
+				{
+					"name": "UpdatedDateOrderItems"
+				},
+				{
+					"name": "DropLineItemColumn"
+				},
+				{
+					"name": "UpdatedTimestamp"
+				},
+				{
+					"name": "CastCutomerDataType"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ORDER_ID as string,",
+				"          ORDER_DATETIME as string,",
+				"          CUSTOMER_ID as string,",
+				"          ORDER_STATUS as string,",
+				"          STORE_ID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> OrdersRaw",
+				"source(output(",
+				"          ORDER_ID as string,",
+				"          LINE_ITEM_ID as string,",
+				"          PRODUCT_ID as string,",
+				"          UNIT_PRICE as string,",
+				"          QUANTITY as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> OrderItemsRaw",
+				"source(output(",
+				"          CUSTOMER_ID as short,",
+				"          EMAIL_ADDRESS as string,",
+				"          FULL_NAME as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> CustomerRaw",
+				"OrdersRaw derive(ORDER_DATE = toDate(ORDER_DATETIME,'dd-MMM-yy HH.mm.ss.SS' ),",
+				"          UPDATED_TIMESTAMP = currentUTC()) ~> OrderDateUpdatedTimestamp",
+				"OrderDateUpdatedTimestamp cast(output(",
+				"          ORDER_ID as integer,",
+				"          ORDER_DATETIME as string,",
+				"          CUSTOMER_ID as integer,",
+				"          ORDER_STATUS as string,",
+				"          STORE_ID as integer,",
+				"          ORDER_DATE as date,",
+				"          UPDATED_TIMESTAMP as timestamp",
+				"     ),",
+				"     errors: true) ~> castDataTypeOrders",
+				"castDataTypeOrders select(mapColumn(",
+				"          ORDER_ID,",
+				"          CUSTOMER_ID,",
+				"          ORDER_STATUS,",
+				"          STORE_ID,",
+				"          ORDER_DATE,",
+				"          UPDATED_TIMESTAMP",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DropOrderateTimeAndReorder",
+				"OrderItemsRaw cast(output(",
+				"          ORDER_ID as integer,",
+				"          LINE_ITEM_ID as integer,",
+				"          PRODUCT_ID as integer,",
+				"          UNIT_PRICE as float,",
+				"          QUANTITY as integer",
+				"     ),",
+				"     errors: true) ~> CastDataType",
+				"CastDataType derive(UPDATED_TIMESTAMP = currentTimestamp()) ~> UpdatedDateOrderItems",
+				"UpdatedDateOrderItems select(mapColumn(",
+				"          ORDER_ID,",
+				"          PRODUCT_ID,",
+				"          UNIT_PRICE,",
+				"          QUANTITY,",
+				"          UPDATED_TIMESTAMP",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DropLineItemColumn",
+				"CustomerRaw derive(UPDATED_TIMESTAMP = currentUTC()) ~> UpdatedTimestamp",
+				"UpdatedTimestamp cast(output(",
+				"          CUSTOMER_ID as integer,",
+				"          EMAIL_ADDRESS as string,",
+				"          FULL_NAME as string,",
+				"          UPDATED_TIMESTAMP as timestamp",
+				"     ),",
+				"     errors: true) ~> CastCutomerDataType",
+				"DropOrderateTimeAndReorder sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ORDER_ID as string,",
+				"          ORDER_DATETIME as string,",
+				"          CUSTOMER_ID as string,",
+				"          ORDER_STATUS as string,",
+				"          STORE_ID as string",
+				"     ),",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> OrderSink",
+				"DropLineItemColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> OrderItemSink",
+				"CastCutomerDataType sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> CustomerSink"
+			]
+		}
+	}
+}

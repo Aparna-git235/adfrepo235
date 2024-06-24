@@ -1,0 +1,23 @@
+{
+	"name": "ds_cutomer_cleanse",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage_order",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "ds_cleanse"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "customer",
+				"fileSystem": "cleanse"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
