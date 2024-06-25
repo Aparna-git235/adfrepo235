@@ -520,6 +520,53 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_oreder_structure')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_clensed_to_structure",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Ordersds": {},
+									"OrderItemsClense": {},
+									"ordersstructured": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_clensed_to_structure')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_raw_to_clense')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -712,7 +759,28 @@
 					},
 					"compressionCodec": "snappy"
 				},
-				"schema": []
+				"schema": [
+					{
+						"name": "ORDER_ID",
+						"type": "INT32"
+					},
+					{
+						"name": "PRODUCT_ID",
+						"type": "INT32"
+					},
+					{
+						"name": "UNIT_PRICE",
+						"type": "FLOAT"
+					},
+					{
+						"name": "QUANTITY",
+						"type": "INT32"
+					},
+					{
+						"name": "UPDATED_TIMESTAMP",
+						"type": "INT96"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage_order')]"
@@ -735,6 +803,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
+						"fileName": "part-00000-ad063022-dd4e-4f75-ad47-0e432fcbf8e6-c000.snappy.parquet",
 						"fileSystem": "cleanse"
 					},
 					"compressionCodec": "snappy"
@@ -742,10 +811,6 @@
 				"schema": [
 					{
 						"name": "ORDER_ID",
-						"type": "UTF8"
-					},
-					{
-						"name": "ORDER_DATETIME",
 						"type": "UTF8"
 					},
 					{
@@ -759,6 +824,14 @@
 					{
 						"name": "STORE_ID",
 						"type": "UTF8"
+					},
+					{
+						"name": "ORDER_DATE",
+						"type": "DATE"
+					},
+					{
+						"name": "UPDATED_TIMESTAMP",
+						"type": "INT96"
 					}
 				]
 			},
@@ -788,7 +861,24 @@
 					},
 					"compressionCodec": "snappy"
 				},
-				"schema": []
+				"schema": [
+					{
+						"name": "CUSTOMER_ID",
+						"type": "INT32"
+					},
+					{
+						"name": "EMAIL_ADDRESS",
+						"type": "UTF8"
+					},
+					{
+						"name": "FULL_NAME",
+						"type": "UTF8"
+					},
+					{
+						"name": "UPDATED_TIMESTAMP",
+						"type": "INT96"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage_order')]"
@@ -1042,6 +1132,62 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_structured_order')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage_order",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Structured"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "orders",
+						"fileSystem": "structured"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage_order')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_structured_product')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage_order",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Structured"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "product",
+						"fileSystem": "structured"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage_order')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_temp_sink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1135,6 +1281,109 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_clensed_to_structure')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_cleanse_orders",
+								"type": "DatasetReference"
+							},
+							"name": "Ordersds"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_cleanse_order_items",
+								"type": "DatasetReference"
+							},
+							"name": "OrderItemsClense"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_structured_order",
+								"type": "DatasetReference"
+							},
+							"name": "ordersstructured"
+						}
+					],
+					"transformations": [
+						{
+							"name": "OrdersOrderItemsJoin"
+						},
+						{
+							"name": "DropDuplicatedOrderColumns"
+						},
+						{
+							"name": "subtotalupdatedTimestampOrders"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ORDER_ID as integer,",
+						"          CUSTOMER_ID as string,",
+						"          ORDER_STATUS as string,",
+						"          STORE_ID as string,",
+						"          ORDER_DATE as date,",
+						"          UPDATED_TIMESTAMP as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> Ordersds",
+						"source(output(",
+						"          ORDER_ID as integer,",
+						"          PRODUCT_ID as integer,",
+						"          UNIT_PRICE as float,",
+						"          QUANTITY as integer,",
+						"          UPDATED_TIMESTAMP as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> OrderItemsClense",
+						"Ordersds, OrderItemsClense join(Ordersds@ORDER_ID == OrderItemsClense@ORDER_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> OrdersOrderItemsJoin",
+						"OrdersOrderItemsJoin select(mapColumn(",
+						"          ORDER_ID = Ordersds@ORDER_ID,",
+						"          CUSTOMER_ID,",
+						"          ORDER_STATUS,",
+						"          STORE_ID,",
+						"          ORDER_DATE,",
+						"          UPDATED_TIMESTAMP = Ordersds@UPDATED_TIMESTAMP,",
+						"          UNIT_PRICE,",
+						"          QUANTITY",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> DropDuplicatedOrderColumns",
+						"DropDuplicatedOrderColumns derive(SUBTOTAL = UNIT_PRICE*QUANTITY,",
+						"          UPDATED_TIMESTAMP = currentUTC()) ~> subtotalupdatedTimestampOrders",
+						"subtotalupdatedTimestampOrders sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ordersstructured"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_cleanse_orders')]",
+				"[concat(variables('factoryId'), '/datasets/ds_cleanse_order_items')]",
+				"[concat(variables('factoryId'), '/datasets/ds_structured_order')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/df_order_raw__to_cleanse')]",
@@ -1298,10 +1547,11 @@
 						"     validateSchema: false,",
 						"     input(",
 						"          ORDER_ID as string,",
-						"          ORDER_DATETIME as string,",
 						"          CUSTOMER_ID as string,",
 						"          ORDER_STATUS as string,",
-						"          STORE_ID as string",
+						"          STORE_ID as string,",
+						"          ORDER_DATE as date,",
+						"          UPDATED_TIMESTAMP as timestamp",
 						"     ),",
 						"     format: 'parquet',",
 						"     umask: 0022,",
@@ -1311,6 +1561,13 @@
 						"     skipDuplicateMapOutputs: true) ~> OrderSink",
 						"DropLineItemColumn sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     input(",
+						"          ORDER_ID as integer,",
+						"          PRODUCT_ID as integer,",
+						"          UNIT_PRICE as float,",
+						"          QUANTITY as integer,",
+						"          UPDATED_TIMESTAMP as timestamp",
+						"     ),",
 						"     format: 'parquet',",
 						"     umask: 0022,",
 						"     preCommands: [],",
@@ -1319,6 +1576,12 @@
 						"     skipDuplicateMapOutputs: true) ~> OrderItemSink",
 						"CastCutomerDataType sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     input(",
+						"          CUSTOMER_ID as integer,",
+						"          EMAIL_ADDRESS as string,",
+						"          FULL_NAME as string,",
+						"          UPDATED_TIMESTAMP as timestamp",
+						"     ),",
 						"     format: 'parquet',",
 						"     umask: 0022,",
 						"     preCommands: [],",
