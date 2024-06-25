@@ -13,6 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": "part-00000-ad063022-dd4e-4f75-ad47-0e432fcbf8e6-c000.snappy.parquet",
 				"fileSystem": "cleanse"
 			},
 			"compressionCodec": "snappy"
@@ -20,10 +21,6 @@
 		"schema": [
 			{
 				"name": "ORDER_ID",
-				"type": "UTF8"
-			},
-			{
-				"name": "ORDER_DATETIME",
 				"type": "UTF8"
 			},
 			{
@@ -37,6 +34,14 @@
 			{
 				"name": "STORE_ID",
 				"type": "UTF8"
+			},
+			{
+				"name": "ORDER_DATE",
+				"type": "DATE"
+			},
+			{
+				"name": "UPDATED_TIMESTAMP",
+				"type": "INT96"
 			}
 		]
 	}

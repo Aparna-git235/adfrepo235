@@ -1,0 +1,96 @@
+{
+	"name": "df_clensed_to_structure",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_cleanse_orders",
+						"type": "DatasetReference"
+					},
+					"name": "Ordersds"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_cleanse_order_items",
+						"type": "DatasetReference"
+					},
+					"name": "OrderItemsClense"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_structured_order",
+						"type": "DatasetReference"
+					},
+					"name": "ordersstructured"
+				}
+			],
+			"transformations": [
+				{
+					"name": "OrdersOrderItemsJoin"
+				},
+				{
+					"name": "DropDuplicatedOrderColumns"
+				},
+				{
+					"name": "subtotalupdatedTimestampOrders"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ORDER_ID as integer,",
+				"          CUSTOMER_ID as string,",
+				"          ORDER_STATUS as string,",
+				"          STORE_ID as string,",
+				"          ORDER_DATE as date,",
+				"          UPDATED_TIMESTAMP as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> Ordersds",
+				"source(output(",
+				"          ORDER_ID as integer,",
+				"          PRODUCT_ID as integer,",
+				"          UNIT_PRICE as float,",
+				"          QUANTITY as integer,",
+				"          UPDATED_TIMESTAMP as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> OrderItemsClense",
+				"Ordersds, OrderItemsClense join(Ordersds@ORDER_ID == OrderItemsClense@ORDER_ID,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> OrdersOrderItemsJoin",
+				"OrdersOrderItemsJoin select(mapColumn(",
+				"          ORDER_ID = Ordersds@ORDER_ID,",
+				"          CUSTOMER_ID,",
+				"          ORDER_STATUS,",
+				"          STORE_ID,",
+				"          ORDER_DATE,",
+				"          UPDATED_TIMESTAMP = Ordersds@UPDATED_TIMESTAMP,",
+				"          UNIT_PRICE,",
+				"          QUANTITY",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DropDuplicatedOrderColumns",
+				"DropDuplicatedOrderColumns derive(SUBTOTAL = UNIT_PRICE*QUANTITY,",
+				"          UPDATED_TIMESTAMP = currentUTC()) ~> subtotalupdatedTimestampOrders",
+				"subtotalupdatedTimestampOrders sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> ordersstructured"
+			]
+		}
+	}
+}
