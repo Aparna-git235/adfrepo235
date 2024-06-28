@@ -1,0 +1,13 @@
+{
+	"name": "AzureDatabricks1",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-2714486105864460.0.azuredatabricks.net",
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/85dbecee-9a24-46b5-914d-69d3d9eda12c/resourceGroups/DB_RG/providers/Microsoft.Databricks/workspaces/Databrick_space",
+			"existingClusterId": "Aparna Das's cluster"
+		}
+	}
+}
