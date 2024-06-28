@@ -1,0 +1,47 @@
+{
+	"name": "pl_flow_by_execute_pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "pl_oreder_structure",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_oreder_structure",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_raw_to_clense",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_oreder_structure",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_raw_to_clense",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}
