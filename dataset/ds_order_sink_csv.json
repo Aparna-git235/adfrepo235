@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": "orders_renamed.csv",
 				"folderPath": "sink",
 				"fileSystem": "orders"
 			},
