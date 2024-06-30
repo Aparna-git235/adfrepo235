@@ -5,12 +5,20 @@
 			"referenceName": "AzureDataLakeStorage_order",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"pSourcefilename": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "order_items_2022-01-29.csv",
+				"fileName": {
+					"value": "@dataset().pSourcefilename",
+					"type": "Expression"
+				},
 				"folderPath": "source",
 				"fileSystem": "orders"
 			},
